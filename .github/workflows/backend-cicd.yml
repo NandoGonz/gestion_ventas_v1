@@ -1,0 +1,85 @@
+name: Backend CI/CD
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-cicd.yml"
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-cicd.yml"
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Desplegar tras superar pruebas y build"
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+      - name: Ejecutar pruebas
+        run: python -m pytest -q
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Construir imagen sin secretos
+        run: docker build -t gestion-ventas-api:ci ./backend
+
+  deploy:
+    needs: [test, build]
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.deploy)
+    runs-on: ubuntu-latest
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_SERVICE_ID: ${{ vars.RAILWAY_SERVICE_ID }}
+      RAILWAY_API_URL: ${{ vars.RAILWAY_API_URL }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verificar configuración del destino
+        run: |
+          test -n "$RAILWAY_TOKEN" || { echo 'Falta RAILWAY_TOKEN'; exit 1; }
+          test -n "$RAILWAY_PROJECT_ID" || { echo 'Falta RAILWAY_PROJECT_ID'; exit 1; }
+          test -n "$RAILWAY_SERVICE_ID" || { echo 'Falta RAILWAY_SERVICE_ID'; exit 1; }
+          test -n "$RAILWAY_API_URL" || { echo 'Falta RAILWAY_API_URL'; exit 1; }
+      - name: Desplegar el backend en Railway
+        run: >-
+          npx --yes @railway/cli@5.62.1 up ./backend --path-as-root
+          --project "$RAILWAY_PROJECT_ID" --environment production
+          --service "$RAILWAY_SERVICE_ID"
+      - name: Verificar API y PostgreSQL remotos
+        run: python backend/scripts/check_deployment.py "$RAILWAY_API_URL"
