@@ -10,15 +10,25 @@ from urllib.request import urlopen
 
 def check(base_url: str, deadline_seconds: int = 120) -> None:
     parsed = urlsplit(base_url)
-    if (parsed.scheme != "https" or not parsed.netloc or parsed.username
-            or parsed.password or parsed.path not in ("", "/")
-            or parsed.query or parsed.fragment):
-        raise ValueError("RAILWAY_API_URL debe ser un origen HTTPS sin ruta ni credenciales")
+    if (
+        parsed.scheme != "https"
+        or not parsed.netloc
+        or parsed.username
+        or parsed.password
+        or parsed.path not in ("", "/")
+        or parsed.query
+        or parsed.fragment
+    ):
+        raise ValueError(
+            "RAILWAY_API_URL debe ser un origen HTTPS sin ruta ni credenciales"
+        )
 
     origin = base_url.rstrip("/")
     deadline = time.monotonic() + deadline_seconds
-    for path, expected in (("/health", {"status": "ok"}),
-                           ("/health/db", {"status": "ok", "database": "connected"})):
+    for path, expected in (
+        ("/health", {"status": "ok"}),
+        ("/health/db", {"status": "ok", "database": "connected"}),
+    ):
         while True:
             try:
                 with urlopen(origin + path, timeout=5) as response:
