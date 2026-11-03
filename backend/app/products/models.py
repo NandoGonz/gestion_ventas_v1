@@ -35,3 +35,4 @@ class Product(Base):
     fecha_actualizacion: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     sale_details: Mapped[list["SaleDetail"]] = relationship(back_populates="product")
+    inventory_movements: Mapped[list["InventoryMovement"]] = relationship(back_populates="product")

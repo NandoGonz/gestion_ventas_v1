@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.clients.models import Client, ClientStatus
 from app.core.exceptions import ConflictError, ResourceNotFoundError
+from app.inventory.models import InventoryMovement, InventoryMovementType
 from app.products.models import Product, ProductStatus
 from app.sales.models import PaymentMethod, Sale, SaleDetail
 from app.sales.schemas import SaleCreate
@@ -62,6 +63,18 @@ class SaleService:
             self.session.add(sale)
             self.session.flush()
             sale_id = sale.id
+            self.session.add_all(
+                [
+                    InventoryMovement(
+                        producto_id=detail.producto_id,
+                        tipo_movimiento=InventoryMovementType.VENTA,
+                        cantidad=detail.cantidad,
+                        motivo=f"Venta #{sale_id}",
+                        venta_id=sale_id,
+                    )
+                    for detail in detail_rows
+                ]
+            )
             self.session.commit()
             return self.session.scalar(
                 select(Sale)

@@ -48,13 +48,46 @@ Ejemplo de creación:
 | GET | `/productos/?limit=100&offset=0` | Lista paginada. |
 | POST | `/productos/` | Crea producto. |
 | GET | `/productos/{id}` | Consulta producto. |
-| PATCH | `/productos/{id}` | Actualiza datos, precio, stock o estado de preventa/descontinuación. |
+| PATCH | `/productos/{id}` | Actualiza datos, precio o estado de preventa/descontinuación. No acepta `stock`. |
 
 Ejemplo de creación:
 
 ```json
 {"nombre":"Teclado","descripcion":"Teclado para estación de trabajo","precio":"85000.00","stock":10}
 ```
+
+Después de crear un producto con existencias iniciales, los cambios de stock se realizan exclusivamente desde Inventario o mediante una venta. Enviar `stock` a `PATCH /productos/{id}` se rechaza con `422`.
+
+## Inventario
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/inventario/?limit=100&offset=0` | Lista productos con sus existencias actuales. |
+| GET | `/inventario/movimientos?limit=100&offset=0` | Lista el historial inmutable de movimientos, del más reciente al más antiguo. |
+| POST | `/inventario/entradas` | Registra una entrada y aumenta el stock. |
+| POST | `/inventario/salidas` | Registra una salida manual y disminuye el stock si hay disponibilidad. |
+
+Ejemplo de entrada:
+
+```json
+{
+  "producto_id": 1,
+  "cantidad": 10,
+  "motivo": "Recepción de mercancía"
+}
+```
+
+Ejemplo de salida:
+
+```json
+{
+  "producto_id": 1,
+  "cantidad": 2,
+  "motivo": "Producto dañado"
+}
+```
+
+Los movimientos son de tipo `entrada`, `salida` o `venta`. No disponen de endpoints ordinarios de modificación o eliminación. Las ventas registran automáticamente un movimiento `venta` por cada detalle dentro de la misma transacción que descuenta el stock.
 
 ## Ventas
 

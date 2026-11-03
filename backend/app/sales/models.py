@@ -33,6 +33,7 @@ class Sale(Base):
     client: Mapped["Client"] = relationship(back_populates="sales")
     user: Mapped["User"] = relationship(back_populates="sales")
     detalle_ventas: Mapped[list["SaleDetail"]] = relationship(back_populates="sale", cascade="all, delete-orphan", passive_deletes=True)
+    inventory_movements: Mapped[list["InventoryMovement"]] = relationship(back_populates="sale")
 
 
 class SaleDetail(Base):

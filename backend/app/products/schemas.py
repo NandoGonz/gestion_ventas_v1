@@ -14,11 +14,10 @@ class ProductCreate(BaseModel):
 
 
 class ProductUpdate(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True)
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
     nombre: str | None = Field(default=None, min_length=2, max_length=80)
     descripcion: str | None = Field(default=None, max_length=500)
     precio: Decimal | None = Field(default=None, gt=0, max_digits=12, decimal_places=2)
-    stock: int | None = Field(default=None, ge=0, le=1_000_000)
     estado: ProductStatus | None = None
 
     @model_validator(mode="after")
@@ -31,8 +30,6 @@ class ProductUpdate(BaseModel):
             raise ValueError("La descripción no puede ser nula.")
         if "precio" in self.model_fields_set and self.precio is None:
             raise ValueError("El precio no puede ser nulo.")
-        if "stock" in self.model_fields_set and self.stock is None:
-            raise ValueError("El stock no puede ser nulo.")
         return self
 
 

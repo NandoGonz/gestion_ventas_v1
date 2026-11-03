@@ -91,6 +91,7 @@ input:focus, select:focus { border-color: #6d8dec; box-shadow: 0 0 0 3px rgba(53
 input::placeholder { color: #adb6c5; }
 .span-2 { grid-column: span 2; }
 .form-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+.inventory-forms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
 .button { border: 1px solid transparent; border-radius: 9px; padding: 10px 14px; font-size: 11px; font-weight: 800; display: inline-flex; justify-content: center; align-items: center; gap: 10px; transition: transform .12s, background .12s; white-space: nowrap; }
 .button:active { transform: translateY(1px); }
 .button-primary { color: white; background: var(--primary); box-shadow: 0 5px 12px rgba(53,104,232,.16); }
@@ -167,6 +168,7 @@ input::placeholder { color: #adb6c5; }
   .metric-card { padding: 14px; }
   .metric-card strong { font-size: 22px; }
   .form-grid { grid-template-columns: 1fr; padding: 16px; }
+  .inventory-forms { grid-template-columns: 1fr; }
   .span-2 { grid-column: auto; }
   .panel-header { padding: 17px 16px; }
   .sale-line { grid-template-columns: 1fr 95px; }

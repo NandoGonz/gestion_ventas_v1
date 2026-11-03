@@ -54,6 +54,17 @@ export type Sale = {
   detalle_ventas: SaleDetail[]
 }
 
+export type InventoryMovement = {
+  id: number
+  producto_id: number
+  producto_nombre: string
+  tipo_movimiento: 'entrada' | 'salida' | 'venta'
+  cantidad: number
+  motivo: string
+  venta_id: number | null
+  fecha_creacion: string
+}
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/$/, '')
 
 async function request<T>(path: string, options: RequestInit = {}, token?: string): Promise<T> {
@@ -103,6 +114,10 @@ export const createProduct = (payload: unknown, token: string) => request<Produc
 export const updateProduct = (id: number, payload: unknown, token: string) => request<Product>(`/productos/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }, token)
 export const getSales = (token: string) => request<Sale[]>('/ventas/?limit=100', {}, token)
 export const createSale = (payload: unknown, token: string) => request<Sale>('/ventas/', { method: 'POST', body: JSON.stringify(payload) }, token)
+export const getInventory = (token: string) => request<Product[]>('/inventario/?limit=200', {}, token)
+export const getInventoryMovements = (token: string) => request<InventoryMovement[]>('/inventario/movimientos?limit=200', {}, token)
+export const registerInventoryEntry = (payload: unknown, token: string) => request<InventoryMovement>('/inventario/entradas', { method: 'POST', body: JSON.stringify(payload) }, token)
+export const registerInventoryExit = (payload: unknown, token: string) => request<InventoryMovement>('/inventario/salidas', { method: 'POST', body: JSON.stringify(payload) }, token)
 
 export function formatMoney(value: string | number): string {
   return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 2 }).format(Number(value))

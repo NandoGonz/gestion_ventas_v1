@@ -11,6 +11,8 @@ from app.clients.routes import router as clients_router
 from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
 from app.core.error_handlers import register_exception_handlers
+from app.inventory import models as _inventory_models
+from app.inventory.routes import router as inventory_router
 from app.products import models as _product_models
 from app.products.routes import router as products_router
 from app.sales import models as _sales_models
@@ -56,6 +58,7 @@ register_exception_handlers(app)
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["Autenticación"])
 app.include_router(clients_router, prefix="/api/v1/clientes", tags=["Clientes"])
 app.include_router(products_router, prefix="/api/v1/productos", tags=["Productos"])
+app.include_router(inventory_router, prefix="/api/v1/inventario", tags=["Inventario"])
 app.include_router(sales_router, prefix="/api/v1/ventas", tags=["Ventas"])
 
 

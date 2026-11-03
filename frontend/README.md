@@ -8,7 +8,7 @@ Interfaz de uso interno para iniciar sesión, consultar el panel, crear/consulta
 - `src/auth/ProtectedRoute.tsx`: protege páginas del área privada.
 - `src/context/AuthContext.tsx`: sesión en memoria, login y logout.
 - `src/layouts/AppLayout.tsx`: navegación y marco visual.
-- `src/pages`: login, resumen, clientes, productos y ventas.
+- `src/pages`: login, resumen, clientes, productos, inventario y ventas.
 - `src/routes/AppRouter.tsx`: mapa de rutas.
 - `src/styles/global.css`: estilos responsive.
 
@@ -30,7 +30,9 @@ npm test
 npm run build
 ```
 
-La suite usa Vitest y Testing Library para probar el formulario de acceso. Las pruebas de componentes y flujos se ampliarán junto con nuevas funcionalidades.
+La suite usa Vitest y Testing Library para probar el formulario de acceso. Las pruebas de componentes y flujos se ampliarán junto con nuevas funcionalidades. Actualmente, `src/pages/LoginPage.test.tsx` tiene dos fallos preexistentes por renders acumulados entre casos; no están relacionados con Inventario. La prueba aislada de Inventario pasa correctamente.
+
+La sección Inventario consulta existencias, registra entradas y salidas con motivo, y muestra movimientos inmutables, incluidas las salidas originadas por ventas.
 
 ## Sesión
 

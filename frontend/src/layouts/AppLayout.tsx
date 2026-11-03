@@ -12,6 +12,7 @@ export function AppLayout() {
           <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><span>▦</span>Resumen</NavLink>
           <NavLink to="/clientes" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><span>♙</span>Clientes</NavLink>
           <NavLink to="/productos" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><span>▤</span>Productos</NavLink>
+          <NavLink to="/inventario" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><span>▧</span>Inventario</NavLink>
           <NavLink to="/ventas" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><span>↗</span>Ventas</NavLink>
         </nav>
         <div className="sidebar-bottom"><span className="status-dot" /> API conectada por sesión autenticada</div>

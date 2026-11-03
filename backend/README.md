@@ -13,6 +13,7 @@ Backend modular basado en FastAPI, SQLAlchemy 2, Pydantic, PostgreSQL, `python-j
 - `app/users`: modelo `User` y bootstrap seguro e idempotente del administrador inicial.
 - `app/clients`: modelo, esquemas, servicios y endpoints de clientes.
 - `app/products`: modelo, esquemas, servicios y endpoints del inventario.
+- `app/inventory`: movimientos inmutables de entrada, salida, saldo inicial y ventas.
 - `app/sales`: venta, detalles y transacción de inventario.
 - `tests/unit`, `tests/integration`, `tests/e2e`: pruebas separadas por alcance.
 
@@ -69,7 +70,8 @@ Los endpoints de negocio requieren `Authorization: Bearer <token>` y usuario adm
 - `POST /api/v1/auth/login`: login OAuth2 form (`username=email`, `password=...`).
 - `GET /api/v1/auth/me`: perfil de la sesión autenticada.
 - `GET|POST /api/v1/clientes/`, `GET|PATCH /api/v1/clientes/{documento}`, `PATCH /api/v1/clientes/{documento}/estado`, `DELETE /api/v1/clientes/{documento}`.
-- `GET|POST /api/v1/productos/`, `GET|PATCH /api/v1/productos/{id}`.
+- `GET|POST /api/v1/productos/`, `GET|PATCH /api/v1/productos/{id}`. El `PATCH` no admite `stock`.
+- `GET /api/v1/inventario/`, `GET /api/v1/inventario/movimientos`, `POST /api/v1/inventario/entradas`, `POST /api/v1/inventario/salidas`.
 - `GET|POST /api/v1/ventas/`, `GET /api/v1/ventas/{id}`.
 - `GET /health` y `GET /health/db` para estado del proceso y conectividad.
 
@@ -79,10 +81,28 @@ Los endpoints de negocio requieren `Authorization: Bearer <token>` y usuario adm
 2. El cliente se desactiva lógicamente; no se borra su historial de ventas.
 3. Los precios deben ser positivos y el stock nunca puede quedar por debajo de cero.
 4. El backend calcula el total usando el precio del producto en base de datos; no confía en totales del frontend.
-5. El descuento de stock, la creación de venta/detalles y el incremento de saldo en ventas a crédito comparten una transacción.
-6. Se descuenta stock mediante un `UPDATE` condicional con `stock >= cantidad` y estado disponible. Si cualquier línea falla, se revierte la transacción completa.
-7. `detalle_venta.subtotal` es una columna calculada por la base de datos.
-8. Los errores de base de datos no exponen SQL ni credenciales al cliente HTTP.
+5. Las entradas y salidas actualizan stock y crean su movimiento en una misma transacción.
+6. El descuento de stock, la creación de venta/detalles, los movimientos de venta y el incremento de saldo en ventas a crédito comparten una transacción.
+7. Se descuenta stock mediante un `UPDATE` condicional con `stock >= cantidad` y estado disponible. Si cualquier línea falla, se revierte la transacción completa.
+8. `detalle_venta.subtotal` es una columna calculada por la base de datos.
+9. Los movimientos de inventario no se modifican ni eliminan desde operaciones ordinarias de la API.
+10. Los errores de base de datos no exponen SQL ni credenciales al cliente HTTP.
+
+## Migración de inventario en PostgreSQL
+
+`Base.metadata.create_all()` sirve para entornos nuevos, pero no sustituye una migración de producción. Antes de desplegar esta funcionalidad en Railway, crea un respaldo, programa una ventana breve sin escrituras y ejecuta desde `backend/`:
+
+```powershell
+python scripts/run_migration.py
+```
+
+El ejecutor calcula el SHA-256 de `migrations/001_create_inventory_movements.sql`, adquiere un bloqueo transaccional PostgreSQL, valida el esquema y registra la versión en `gestion_ventas_migraciones`. Una versión con el mismo checksum no se repite; una versión con checksum distinto falla. La transacción crea solo los elementos nuevos y los movimientos de saldo inicial, sin eliminar ni sobrescribir datos existentes. No ejecutes este comando contra Railway sin el respaldo y la ventana de mantenimiento.
+
+### Orden obligatorio en una base existente
+
+No despliegues ni arranques la revisión del backend que contiene el modelo de inventario antes de ejecutar la migración: con `AUTO_CREATE_TABLES=true`, el arranque de FastAPI puede crear `movimientos_inventario` mediante `create_all()` sin registrar la versión ni generar los saldos iniciales. La migración detectará ese estado parcial y fallará para proteger los datos.
+
+El ejecutor no llama a `create_all()`, por lo que puede ejecutarse contra la base existente antes del despliegue. Mantén la configuración de producción sin cambios automáticos; si es imprescindible arrancar un proceso de la nueva revisión antes de migrar, configura temporalmente `AUTO_CREATE_TABLES=false` solo para ese proceso y restáuralo según la política operativa después de validar la migración.
 
 ## Pruebas
 

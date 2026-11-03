@@ -3,6 +3,7 @@ import { ProtectedRoute } from '../auth/ProtectedRoute'
 import { AppLayout } from '../layouts/AppLayout'
 import { ClientsPage } from '../pages/ClientsPage'
 import { DashboardPage } from '../pages/DashboardPage'
+import { InventoryPage } from '../pages/InventoryPage'
 import { LoginPage } from '../pages/LoginPage'
 import { ProductsPage } from '../pages/ProductsPage'
 import { SalesPage } from '../pages/SalesPage'
@@ -15,6 +16,7 @@ export function AppRouter() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/clientes" element={<ClientsPage />} />
         <Route path="/productos" element={<ProductsPage />} />
+        <Route path="/inventario" element={<InventoryPage />} />
         <Route path="/ventas" element={<SalesPage />} />
       </Route>
     </Route>

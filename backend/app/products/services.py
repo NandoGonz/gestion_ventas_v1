@@ -4,6 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import BusinessRuleError
+from app.inventory.models import InventoryMovement, InventoryMovementType
 from app.products.models import Product, ProductStatus
 from app.products.schemas import ProductCreate, ProductUpdate
 
@@ -18,6 +19,16 @@ class ProductService:
             status = ProductStatus.AGOTADO if values["stock"] == 0 else ProductStatus.DISPONIBLE
             product = Product(**values, estado=status)
             self.session.add(product)
+            self.session.flush()
+            if product.stock > 0:
+                self.session.add(
+                    InventoryMovement(
+                        producto_id=product.id,
+                        tipo_movimiento=InventoryMovementType.ENTRADA,
+                        cantidad=product.stock,
+                        motivo="Stock inicial del producto",
+                    )
+                )
             self.session.commit()
             self.session.refresh(product)
             return product
@@ -48,8 +59,6 @@ class ProductService:
                 setattr(product, key, value)
             if requested_status is not None:
                 product.estado = requested_status
-            elif "stock" in values and product.estado in {ProductStatus.DISPONIBLE, ProductStatus.AGOTADO}:
-                product.estado = ProductStatus.AGOTADO if product.stock == 0 else ProductStatus.DISPONIBLE
             self.session.commit()
             self.session.refresh(product)
             return product
