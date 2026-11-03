@@ -1,8 +1,17 @@
 """Modelos ORM para el historial inmutable de inventario."""
+
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import CheckConstraint, DateTime, Enum as SQLEnum, ForeignKey, Integer, String, func
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    Enum as SQLEnum,
+    ForeignKey,
+    Integer,
+    String,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -15,9 +24,11 @@ class InventoryMovementType(str, Enum):
 
 
 class InventoryMovement(Base):
-    __tablename__ = "movimientos_inventario"
+    __tablename__ = "inventario"
     __table_args__ = (
-        CheckConstraint("cantidad > 0", name="ck_movimientos_inventario_cantidad_positiva"),
+        CheckConstraint(
+            "cantidad > 0", name="ck_movimientos_inventario_cantidad_positiva"
+        ),
         CheckConstraint(
             "(tipo_movimiento = 'venta' AND venta_id IS NOT NULL) "
             "OR (tipo_movimiento IN ('entrada', 'salida') AND venta_id IS NULL)",
