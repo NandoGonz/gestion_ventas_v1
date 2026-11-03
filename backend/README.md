@@ -45,7 +45,7 @@ python -c "from app.core.config import settings; from sqlalchemy.engine import m
 
 ## Cuenta inicial de desarrollo
 
-El archivo local `.env` de esta entrega configura la cuenta administrativa inicial: **Emiro José González Rivera** (`admin@gestionventas.com`). La contraseña se toma de `BOOTSTRAP_ADMIN_PASSWORD`; no se documenta en texto dentro del README. El bootstrap solo crea la cuenta si el correo no existe y nunca reemplaza la contraseña de una cuenta ya creada. Mantén `.env` fuera del control de versiones.
+El archivo local `.env` de esta entrega configura la cuenta administrativa inicial: **Emiro José González Rivera** (`adminemiro@version1.com`). La contraseña se toma de `BOOTSTRAP_ADMIN_PASSWORD`; no se documenta en texto dentro del README. El bootstrap solo crea la cuenta si el correo no existe y nunca reemplaza la contraseña de una cuenta ya creada. Mantén `.env` fuera del control de versiones.
 
 ## Variables de configuración
 
